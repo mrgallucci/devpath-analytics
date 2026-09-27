@@ -19,3 +19,6 @@ frontend/out/
 .DS_Store
 Thumbs.db
 backend/devpath.db
+# Certificados e arquivos enviados pelos usuários
+backend/uploads/*
+!backend/uploads/.gitkeep

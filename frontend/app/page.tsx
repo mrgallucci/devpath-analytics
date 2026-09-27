@@ -27,6 +27,15 @@ type Project = {
   deploy: string | null;
   tecnologias: string | null;
 };
+type Certificate = {
+  id: number;
+  titulo: string;
+  instituicao: string;
+  categoria: string | null;
+  data_conclusao: string | null;
+  url: string | null;
+  arquivo: string | null;
+};
 
 async function getSkills(): Promise<Skill[]> {
   const response = await fetch(
@@ -72,13 +81,29 @@ async function getProjects(): Promise<Project[]> {
 
   return response.json();
 }
+async function getCertificates(): Promise<Certificate[]> {
+  const response = await fetch(
+    "http://127.0.0.1:8000/api/certificates",
+    {
+      cache: "no-store",
+    }
+  );
 
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar os certificados."
+    );
+  }
+
+  return response.json();
+}
 export default async function Home() {
-  const [skills, summary, projects] = await Promise.all([
-    getSkills(),
-    getDashboardSummary(),
-    getProjects(),
-  ]);
+  const [skills, summary, projects, certificates] = await Promise.all([
+  getSkills(),
+  getDashboardSummary(),
+  getProjects(),
+  getCertificates(),
+]);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -265,6 +290,87 @@ export default async function Home() {
             ))}
           </div>
         </section>
+        <section className="mt-10">
+  <div className="mb-5 flex items-end justify-between gap-4">
+    <div>
+      <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">
+        Formação contínua
+      </p>
+
+      <h2 className="mt-1 text-2xl font-bold text-white">
+        Certificados
+      </h2>
+
+      <p className="mt-1 text-sm text-slate-400">
+        Cursos, formações e credenciais da minha trajetória em tecnologia.
+      </p>
+    </div>
+
+    <span className="text-sm text-slate-400">
+      {certificates.length} certificados
+    </span>
+  </div>
+
+  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    {certificates.map((certificate) => (
+      <article
+        key={certificate.id}
+        className="rounded-2xl border border-slate-800 bg-slate-900 p-5"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-emerald-500">
+              {certificate.instituicao}
+            </p>
+
+            <h3 className="mt-2 font-semibold text-white">
+              {certificate.titulo}
+            </h3>
+          </div>
+
+          {certificate.categoria && (
+            <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300">
+              {certificate.categoria}
+            </span>
+          )}
+        </div>
+
+        {certificate.data_conclusao && (
+          <p className="mt-4 text-sm text-slate-400">
+            Conclusão:{" "}
+            {new Date(
+              `${certificate.data_conclusao}T00:00:00`
+            ).toLocaleDateString("pt-BR")}
+          </p>
+        )}
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          {certificate.arquivo && (
+            <a
+              href={`http://127.0.0.1:8000${certificate.arquivo}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+            >
+              Ver certificado
+            </a>
+          )}
+
+          {certificate.url && (
+            <a
+              href={certificate.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
+            >
+              Ver credencial
+            </a>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
 
       </div>
     </main>

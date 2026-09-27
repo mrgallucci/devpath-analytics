@@ -1,19 +1,34 @@
+from pathlib import Path
+from uuid import uuid4
 import httpx
 
-from fastapi import FastAPI, Depends, HTTPException
-from fastapi import FastAPI
+from fastapi import (
+    FastAPI,
+    Depends,
+    HTTPException,
+    UploadFile,
+    File,
+)
+
 from fastapi.middleware.cors import CORSMiddleware
-
-
-
-from database import Base, engine
-import models
-from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from fastapi.staticfiles import StaticFiles
 
 from database import Base, engine, get_db
 import models
+
+
+class CertificateCreate(BaseModel):
+    titulo: str
+    instituicao: str
+    categoria: str | None = None
+    data_conclusao: str | None = None
+    url: str | None = None
+    arquivo: str | None = None
+
+UPLOAD_DIR = Path("uploads/certificates")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 class ProjectImport(BaseModel):
     url: str
@@ -23,6 +38,11 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="DevPath Analytics API",
     version="0.1.0"
+)
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads",
 )
 app.add_middleware(
     CORSMiddleware,
@@ -387,3 +407,85 @@ async def import_project(
     },
     "tecnologias_detectadas": tecnologias,
 }
+@app.post("/api/certificates/upload")
+async def upload_certificado(
+    file: UploadFile = File(...),
+):
+    extensoes_permitidas = {".pdf", ".jpg", ".jpeg", ".png"}
+
+    extensao = Path(file.filename or "").suffix.lower()
+
+    if extensao not in extensoes_permitidas:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato não permitido. Use PDF, JPG, JPEG ou PNG.",
+        )
+
+    nome_arquivo = f"{uuid4().hex}{extensao}"
+    caminho_arquivo = UPLOAD_DIR / nome_arquivo
+
+    conteudo = await file.read()
+
+    with open(caminho_arquivo, "wb") as arquivo:
+        arquivo.write(conteudo)
+
+    return {
+        "filename": nome_arquivo,
+        "arquivo": f"/uploads/certificates/{nome_arquivo}",
+    }
+class CertificateFileUpdate(BaseModel):
+    arquivo: str
+
+
+@app.patch("/api/certificates/{certificate_id}/arquivo")
+def atualizar_arquivo_certificado(
+    certificate_id: int,
+    dados: CertificateFileUpdate,
+    db: Session = Depends(get_db),
+):
+    certificado = (
+        db.query(models.Certificate)
+        .filter(models.Certificate.id == certificate_id)
+        .first()
+    )
+
+    if not certificado:
+        raise HTTPException(
+            status_code=404,
+            detail="Certificado não encontrado.",
+        )
+
+    certificado.arquivo = dados.arquivo
+
+    db.commit()
+    db.refresh(certificado)
+
+    return certificado
+
+
+@app.get("/api/certificates")
+def listar_certificados(db: Session = Depends(get_db)):
+    return (
+        db.query(models.Certificate)
+        .order_by(models.Certificate.id.desc())
+        .all()
+    )
+@app.post("/api/certificates")
+def criar_certificado(
+    certificate: CertificateCreate,
+    db: Session = Depends(get_db),
+):
+    certificado = models.Certificate(
+        titulo=certificate.titulo,
+        instituicao=certificate.instituicao,
+        categoria=certificate.categoria,
+        data_conclusao=certificate.data_conclusao,
+        url=certificate.url,
+        arquivo=certificate.arquivo,
+    )
+
+    db.add(certificado)
+    db.commit()
+    db.refresh(certificado)
+
+    return certificado

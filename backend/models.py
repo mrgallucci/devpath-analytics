@@ -34,3 +34,4 @@ class Certificate(Base):
     categoria = Column(String, nullable=True)
     data_conclusao = Column(String, nullable=True)
     url = Column(String, nullable=True)
+    arquivo = Column(String, nullable=True)
