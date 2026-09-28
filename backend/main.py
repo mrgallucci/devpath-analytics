@@ -577,6 +577,31 @@ def criar_certificado(
     db.refresh(certificado)
 
     return certificado
+@app.delete("/api/certificates/{certificate_id}")
+def excluir_certificado(
+    certificate_id: int,
+    db: Session = Depends(get_db),
+):
+    certificado = (
+        db.query(models.Certificate)
+        .filter(models.Certificate.id == certificate_id)
+        .first()
+    )
+
+    if not certificado:
+        raise HTTPException(
+            status_code=404,
+            detail="Certificado não encontrado.",
+        )
+
+    db.delete(certificado)
+    db.commit()
+
+    return {
+        "message": "Certificado excluído com sucesso.",
+        "id": certificate_id,
+    }
+
 @app.get("/api/study-sessions")
 def listar_sessoes_estudo(
     db: Session = Depends(get_db),

@@ -4,6 +4,8 @@ import StudySessionEdit from "@/app/components/study-session-edit";
 import TechIncomeForm from "./components/tech-income-form";
 import CertificateForm from "./components/certificate-form";
 import CertificateEvidence from "./components/certificate-evidence";
+import TechIncomeDelete from "./components/tech-income-delete";
+import CertificateDelete from "./components/certificate-delete";
 
 type Skill = {
   id: number;
@@ -411,11 +413,18 @@ const [
               )}
             </div>
 
-            <p className="whitespace-nowrap font-semibold text-emerald-400">
-              R$ {income.valor.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-              })}
-            </p>
+            <div className="flex shrink-0 flex-col items-end gap-2">
+  <p className="whitespace-nowrap font-semibold text-emerald-400">
+    R$ {income.valor.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+    })}
+  </p>
+
+  <TechIncomeDelete
+    incomeId={income.id}
+    descricao={income.descricao}
+  />
+</div>
           </div>
         ))}
       </div>
@@ -826,17 +835,23 @@ const [
         </div>
 
         {certificate.data_conclusao && (
-          <p className="mt-4 text-sm text-slate-400">
-            Conclusão:{" "}
-            {new Date(
-              `${certificate.data_conclusao}T00:00:00`
-            ).toLocaleDateString("pt-BR")}
-          </p>
-        )}
-        <CertificateEvidence
+  <p className="mt-4 text-sm text-slate-400">
+    Conclusão:{" "}
+    {new Date(
+      `${certificate.data_conclusao}T00:00:00`
+    ).toLocaleDateString("pt-BR")}
+  </p>
+)}
+
+<CertificateEvidence
   certificateId={certificate.id}
   arquivoAtual={certificate.arquivo}
   urlAtual={certificate.url}
+/>
+
+<CertificateDelete
+  certificateId={certificate.id}
+  titulo={certificate.titulo}
 />
 
        
