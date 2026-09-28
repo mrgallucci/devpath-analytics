@@ -2,6 +2,8 @@ import ProjectImportForm from "./components/project-import-form";
 import StudySessionForm from "@/app/components/study-session-form";
 import StudySessionEdit from "@/app/components/study-session-edit";
 import TechIncomeForm from "./components/tech-income-form";
+import CertificateForm from "./components/certificate-form";
+import CertificateEvidence from "./components/certificate-evidence";
 
 type Skill = {
   id: number;
@@ -784,7 +786,7 @@ const [
       <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">
         Formação contínua
       </p>
-
+            <CertificateForm />
       <h2 className="mt-1 text-2xl font-bold text-white">
         Certificados
       </h2>
@@ -831,30 +833,13 @@ const [
             ).toLocaleDateString("pt-BR")}
           </p>
         )}
+        <CertificateEvidence
+  certificateId={certificate.id}
+  arquivoAtual={certificate.arquivo}
+  urlAtual={certificate.url}
+/>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          {certificate.arquivo && (
-            <a
-              href={`http://127.0.0.1:8000${certificate.arquivo}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
-            >
-              Ver certificado
-            </a>
-          )}
-
-          {certificate.url && (
-            <a
-              href={certificate.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800"
-            >
-              Ver credencial
-            </a>
-          )}
-        </div>
+       
       </article>
     ))}
   </div>

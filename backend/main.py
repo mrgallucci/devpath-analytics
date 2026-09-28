@@ -492,6 +492,10 @@ async def upload_certificado(
         "filename": nome_arquivo,
         "arquivo": f"/uploads/certificates/{nome_arquivo}",
     }
+class CertificateLinkUpdate(BaseModel):
+    url: str
+
+
 class CertificateFileUpdate(BaseModel):
     arquivo: str
 
@@ -515,6 +519,31 @@ def atualizar_arquivo_certificado(
         )
 
     certificado.arquivo = dados.arquivo
+
+    db.commit()
+    db.refresh(certificado)
+
+    return certificado
+
+@app.patch("/api/certificates/{certificate_id}/url")
+def atualizar_url_certificado(
+    certificate_id: int,
+    dados: CertificateLinkUpdate,
+    db: Session = Depends(get_db),
+):
+    certificado = (
+        db.query(models.Certificate)
+        .filter(models.Certificate.id == certificate_id)
+        .first()
+    )
+
+    if not certificado:
+        raise HTTPException(
+            status_code=404,
+            detail="Certificado não encontrado.",
+        )
+
+    certificado.url = dados.url
 
     db.commit()
     db.refresh(certificado)
