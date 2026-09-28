@@ -1,14 +1,10 @@
 from database import SessionLocal
 import models
+
+
 db = SessionLocal()
+
 certificados = [
-    {
-        "titulo": "Bem-vindo à DIO",
-        "instituicao": "DIO",
-        "categoria": "Fundamentos",
-        "data_conclusao": "2021-04-19",
-        "url": None,
-    },
     {
         "titulo": "Lógica de Programação Essencial",
         "instituicao": "DIO",
@@ -72,27 +68,6 @@ certificados = [
         "data_conclusao": "2021-04-28",
         "url": None,
     },
-        {
-        "titulo": "Lógica de Programação Essencial",
-        "instituicao": "DIO",
-        "categoria": "Fundamentos",
-        "data_conclusao": "2021-04-29",
-        "url": None,
-    },
-    {
-        "titulo": "Conheça o Banco Carrefour",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-04-29",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Bootcamp Take Blip Fullstack Developer",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-04-29",
-        "url": None,
-    },
     {
         "titulo": "Conceitos e Melhores Práticas com Bancos de Dados PostgreSQL",
         "instituicao": "DIO",
@@ -105,20 +80,6 @@ certificados = [
         "instituicao": "DIO",
         "categoria": "Dados",
         "data_conclusao": "2021-05-17",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Bootcamp Santander Fullstack Developer",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-06-24",
-        "url": None,
-    },
-    {
-        "titulo": "Conceitos e Melhores Práticas com Bancos de Dados PostgreSQL",
-        "instituicao": "DIO",
-        "categoria": "Dados",
-        "data_conclusao": "2021-06-30",
         "url": None,
     },
     {
@@ -140,27 +101,6 @@ certificados = [
         "instituicao": "DIO",
         "categoria": "Fundamentos",
         "data_conclusao": "2021-07-28",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Bootcamp Decola Tech",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-08-23",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Bootcamp Take Blip Fullstack Developer #2",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-09-13",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Bootcamp Impulso React Web Developer",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-09-29",
         "url": None,
     },
     {
@@ -213,20 +153,6 @@ certificados = [
         "url": None,
     },
     {
-        "titulo": "Boas-vindas ao Bootcamp LocalizaLabs .NET Developer #2",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2021-12-27",
-        "url": None,
-    },
-        {
-        "titulo": "Boas-vindas ao Bootcamp Take Blip Web Developer",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2022-01-12",
-        "url": None,
-    },
-    {
         "titulo": "Criando um Sistema de Reconhecimento de Voz para Aprender Cores em Inglês",
         "instituicao": "DIO",
         "categoria": "Frontend",
@@ -241,45 +167,10 @@ certificados = [
         "url": None,
     },
     {
-        "titulo": "Boas-vindas ao Bootcamp Órbi Web Games Developer",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2022-03-21",
-        "url": None,
-    },
-    {
-        "titulo": "Conceitos de responsividade e experiência do usuário",
-        "instituicao": "DIO",
-        "categoria": "Frontend",
-        "data_conclusao": "2022-03-31",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Bootcamp - Impulso Fullstack Web Developer",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2022-04-25",
-        "url": None,
-    },
-    {
         "titulo": "Pensamento Computacional",
         "instituicao": "DIO",
         "categoria": "Fundamentos",
         "data_conclusao": "2022-04-25",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao GFT Start #5 .NET",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2022-05-11",
-        "url": None,
-    },
-    {
-        "titulo": "Boas-vindas ao Decola Tech 3a edição",
-        "instituicao": "DIO",
-        "categoria": "Bootcamp",
-        "data_conclusao": "2022-05-11",
         "url": None,
     },
     {
@@ -290,6 +181,8 @@ certificados = [
         "url": None,
     },
 ]
+
+
 adicionados = 0
 ignorados = 0
 
