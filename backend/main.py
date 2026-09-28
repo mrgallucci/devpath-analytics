@@ -542,7 +542,6 @@ def listar_sessoes_estudo(
         .all()
     )
 
-
 @app.post("/api/study-sessions")
 def criar_sessao_estudo(
     session: StudySessionCreate,
@@ -559,6 +558,55 @@ def criar_sessao_estudo(
             status_code=404,
             detail="Skill não encontrada.",
         )
+
+    minutos = session.minutos
+
+    if session.hora_inicio and session.hora_fim:
+        try:
+            inicio = datetime.strptime(
+                session.hora_inicio,
+                "%H:%M",
+            )
+
+            fim = datetime.strptime(
+                session.hora_fim,
+                "%H:%M",
+            )
+
+            diferenca = fim - inicio
+            minutos = int(
+                diferenca.total_seconds() / 60
+            )
+
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Use o formato HH:MM para os horários.",
+            )
+
+    if minutos is None or minutos <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="A duração da sessão deve ser maior que zero.",
+        )
+
+    nova_sessao = models.StudySession(
+        skill_id=session.skill_id,
+        data=session.data,
+        hora_inicio=session.hora_inicio,
+        hora_fim=session.hora_fim,
+        minutos=minutos,
+        assunto=session.assunto,
+        origem=session.origem,
+        observacao=session.observacao,
+    )
+
+    db.add(nova_sessao)
+    db.commit()
+    db.refresh(nova_sessao)
+
+    return nova_sessao
+
 
 @app.patch("/api/study-sessions/{session_id}")
 def atualizar_sessao_estudo(
@@ -578,6 +626,12 @@ def atualizar_sessao_estudo(
             detail="Sessão de estudo não encontrada.",
         )
 
+    if not sessao.hora_inicio:
+        raise HTTPException(
+            status_code=400,
+            detail="A sessão não possui horário inicial.",
+        )
+
     try:
         inicio = datetime.strptime(
             sessao.hora_inicio,
@@ -590,7 +644,9 @@ def atualizar_sessao_estudo(
         )
 
         diferenca = fim - inicio
-        minutos = int(diferenca.total_seconds() / 60)
+        minutos = int(
+            diferenca.total_seconds() / 60
+        )
 
     except (ValueError, TypeError):
         raise HTTPException(
@@ -604,60 +660,15 @@ def atualizar_sessao_estudo(
             detail="O horário final deve ser posterior ao inicial.",
         )
 
-        sessao.hora_fim = dados.hora_fim
-        sessao.minutos = minutos
+    sessao.hora_fim = dados.hora_fim
+    sessao.minutos = minutos
 
-        db.commit()
-        db.refresh(sessao)
+    db.commit()
+    db.refresh(sessao)
 
-        return sessao
-    
-        minutos = session.minutos
+    return sessao
 
-        if session.hora_inicio and session.hora_fim:
-
-            try: 
-                inicio = datetime.strptime(
-                    session.hora_inicio,
-                    "%H:%M",
-                )
-
-                fim = datetime.strptime(
-                    session.hora_fim,
-                    "%H:%M",
-                )
-
-                diferenca = fim - inicio
-                minutos = int(diferenca.total_seconds() / 60)
-
-            except ValueError:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Use o formato HH:MM para os horários.",
-                )
-
-    if minutos is None or minutos <= 0:
-        raise HTTPException(
-        status_code=400,
-        detail="A duração da sessão deve ser maior que zero.",
-    )
-
-        nova_sessao = models.StudySession(
-        skill_id=session.skill_id,
-        data=session.data,
-        hora_inicio=session.hora_inicio,
-        hora_fim=session.hora_fim,
-        minutos=minutos,
-        assunto=session.assunto,
-        origem=session.origem,
-        observacao=session.observacao,
-    )
-
-        db.add(nova_sessao)
-        db.commit()
-        db.refresh(nova_sessao)
-
-        return nova_sessao
+      
 @app.get("/api/analytics/study-by-skill")
 def estudo_por_skill(
     db: Session = Depends(get_db),
