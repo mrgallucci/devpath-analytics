@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from database import Base
+
 
 
 class Skill(Base):
@@ -35,3 +36,23 @@ class Certificate(Base):
     data_conclusao = Column(String, nullable=True)
     url = Column(String, nullable=True)
     arquivo = Column(String, nullable=True)
+
+class StudySession(Base):
+    __tablename__ = "study_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    skill_id = Column(
+        Integer,
+        ForeignKey("skills.id"),
+        nullable=False,
+    )
+
+    data = Column(String, nullable=False)
+    hora_inicio = Column(String, nullable=True)
+    hora_fim = Column(String, nullable=True)
+    
+    minutos = Column(Integer, nullable=False)
+    assunto = Column(String, nullable=False)
+    origem = Column(String, nullable=True)
+    observacao = Column(String, nullable=True)

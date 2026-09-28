@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 import httpx
@@ -18,6 +19,8 @@ from fastapi.staticfiles import StaticFiles
 from database import Base, engine, get_db
 import models
 
+class StudySessionUpdate(BaseModel):
+    hora_fim: str
 
 class CertificateCreate(BaseModel):
     titulo: str
@@ -58,7 +61,15 @@ class SkillCreate(BaseModel):
     horas_estudo: float = 0
     projetos: int = 0
 
-
+class StudySessionCreate(BaseModel):
+    skill_id: int
+    data: str
+    hora_inicio: str | None = None
+    hora_fim: str | None = None
+    minutos: int | None = None
+    assunto: str
+    origem: str | None = None
+    observacao: str | None = None
 @app.get("/")
 def root():
     return {
@@ -99,20 +110,52 @@ def create_skill(
 def list_skills(
     db: Session = Depends(get_db)
 ):
-    return db.query(models.Skill).all()
+    skills = db.query(models.Skill).all()
+
+    resultado = []
+
+    for skill in skills:
+        sessoes = (
+            db.query(models.StudySession)
+            .filter(models.StudySession.skill_id == skill.id)
+            .all()
+        )
+
+        total_minutos = sum(
+            sessao.minutos for sessao in sessoes
+        )
+
+        resultado.append({
+            "id": skill.id,
+            "nome": skill.nome,
+            "categoria": skill.categoria,
+            "nivel": skill.nivel,
+            "horas_estudo": total_minutos,
+            "projetos": skill.projetos,
+        })
+
+    return resultado
+
 @app.get("/api/dashboard/summary")
 def dashboard_summary(
     db: Session = Depends(get_db)
 ):
     skills = db.query(models.Skill).all()
+    sessoes = db.query(models.StudySession).all()
 
     total_skills = len(skills)
-    total_horas = sum(skill.horas_estudo for skill in skills)
-    
+
+    total_minutos = sum(
+        sessao.minutos for sessao in sessoes
+    )
+
+    horas = total_minutos // 60
+    minutos = total_minutos % 60
 
     return {
         "skills": total_skills,
-        "horas_estudo": total_horas,
+        "horas_estudo": total_minutos,
+        "horas_estudo_formatado": f"{horas}h{minutos:02d}",
         "projetos": db.query(models.Project).count(),
         "certificados": db.query(models.Certificate).count(),
         "renda_tech": 0,
@@ -489,3 +532,165 @@ def criar_certificado(
     db.refresh(certificado)
 
     return certificado
+@app.get("/api/study-sessions")
+def listar_sessoes_estudo(
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(models.StudySession)
+        .order_by(models.StudySession.id.desc())
+        .all()
+    )
+
+
+@app.post("/api/study-sessions")
+def criar_sessao_estudo(
+    session: StudySessionCreate,
+    db: Session = Depends(get_db),
+):
+    skill = (
+        db.query(models.Skill)
+        .filter(models.Skill.id == session.skill_id)
+        .first()
+    )
+
+    if not skill:
+        raise HTTPException(
+            status_code=404,
+            detail="Skill não encontrada.",
+        )
+
+@app.patch("/api/study-sessions/{session_id}")
+def atualizar_sessao_estudo(
+    session_id: int,
+    dados: StudySessionUpdate,
+    db: Session = Depends(get_db),
+):
+    sessao = (
+        db.query(models.StudySession)
+        .filter(models.StudySession.id == session_id)
+        .first()
+    )
+
+    if not sessao:
+        raise HTTPException(
+            status_code=404,
+            detail="Sessão de estudo não encontrada.",
+        )
+
+    try:
+        inicio = datetime.strptime(
+            sessao.hora_inicio,
+            "%H:%M",
+        )
+
+        fim = datetime.strptime(
+            dados.hora_fim,
+            "%H:%M",
+        )
+
+        diferenca = fim - inicio
+        minutos = int(diferenca.total_seconds() / 60)
+
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=400,
+            detail="Horários inválidos. Use o formato HH:MM.",
+        )
+
+    if minutos <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="O horário final deve ser posterior ao inicial.",
+        )
+
+        sessao.hora_fim = dados.hora_fim
+        sessao.minutos = minutos
+
+        db.commit()
+        db.refresh(sessao)
+
+        return sessao
+    
+        minutos = session.minutos
+
+        if session.hora_inicio and session.hora_fim:
+
+            try: 
+                inicio = datetime.strptime(
+                    session.hora_inicio,
+                    "%H:%M",
+                )
+
+                fim = datetime.strptime(
+                    session.hora_fim,
+                    "%H:%M",
+                )
+
+                diferenca = fim - inicio
+                minutos = int(diferenca.total_seconds() / 60)
+
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Use o formato HH:MM para os horários.",
+                )
+
+    if minutos is None or minutos <= 0:
+        raise HTTPException(
+        status_code=400,
+        detail="A duração da sessão deve ser maior que zero.",
+    )
+
+        nova_sessao = models.StudySession(
+        skill_id=session.skill_id,
+        data=session.data,
+        hora_inicio=session.hora_inicio,
+        hora_fim=session.hora_fim,
+        minutos=minutos,
+        assunto=session.assunto,
+        origem=session.origem,
+        observacao=session.observacao,
+    )
+
+        db.add(nova_sessao)
+        db.commit()
+        db.refresh(nova_sessao)
+
+        return nova_sessao
+@app.get("/api/analytics/study-by-skill")
+def estudo_por_skill(
+    db: Session = Depends(get_db),
+):
+    skills = db.query(models.Skill).all()
+
+    resultado = []
+
+    for skill in skills:
+        sessoes = (
+            db.query(models.StudySession)
+            .filter(models.StudySession.skill_id == skill.id)
+            .all()
+        )
+
+        total_minutos = sum(
+            sessao.minutos for sessao in sessoes
+        )
+
+        if total_minutos == 0:
+            continue
+
+        resultado.append({
+            "skill_id": skill.id,
+            "skill": skill.nome,
+            "minutos": total_minutos,
+            "horas": round(total_minutos / 60, 2),
+            "sessoes": len(sessoes),
+        })
+
+    resultado.sort(
+        key=lambda item: item["minutos"],
+        reverse=True,
+    )
+
+    return resultado    

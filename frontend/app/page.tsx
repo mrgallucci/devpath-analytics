@@ -1,4 +1,6 @@
 import ProjectImportForm from "./components/project-import-form";
+import StudySessionForm from "@/app/components/study-session-form";
+import StudySessionEdit from "@/app/components/study-session-edit";
 
 type Skill = {
   id: number;
@@ -12,6 +14,7 @@ type Skill = {
 type DashboardSummary = {
   skills: number;
   horas_estudo: number;
+  horas_estudo_formatado: string;
   projetos: number;
   certificados: number;
   renda_tech: number;
@@ -35,6 +38,25 @@ type Certificate = {
   data_conclusao: string | null;
   url: string | null;
   arquivo: string | null;
+};
+
+type StudySession = {
+  id: number;
+  skill_id: number;
+  data: string;
+  hora_inicio: string | null;
+  hora_fim: string | null;
+  minutos: number;
+  assunto: string;
+  origem: string | null;
+  observacao: string | null;
+};
+type StudyBySkill = {
+  skill_id: number;
+  skill: string;
+  minutos: number;
+  horas: number;
+  sessoes: number;
 };
 
 async function getSkills(): Promise<Skill[]> {
@@ -97,12 +119,50 @@ async function getCertificates(): Promise<Certificate[]> {
 
   return response.json();
 }
+
+async function getStudySessions(): Promise<StudySession[]> {
+  const response = await fetch(
+    "http://127.0.0.1:8000/api/study-sessions",
+    { cache: "no-store" }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar as sessões de estudo."
+    );
+  }
+
+  return response.json();
+}
+async function getStudyBySkill(): Promise<StudyBySkill[]> {
+  const response = await fetch(
+    "http://127.0.0.1:8000/api/analytics/study-by-skill",
+    { cache: "no-store" }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar os dados analíticos."
+    );
+  }
+
+  return response.json();
+}
 export default async function Home() {
-  const [skills, summary, projects, certificates] = await Promise.all([
+  const [
+  skills,
+  summary,
+  projects,
+  certificates,
+  studySessions,
+  studyBySkill,
+] = await Promise.all([
   getSkills(),
   getDashboardSummary(),
   getProjects(),
   getCertificates(),
+  getStudySessions(),
+  getStudyBySkill(),
 ]);
 
   return (
@@ -144,7 +204,7 @@ export default async function Home() {
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              {summary.horas_estudo}h
+              {summary.horas_estudo_formatado}
             </p>
           </article>
 
@@ -181,6 +241,162 @@ export default async function Home() {
             </p>
           </article>
         </section>
+          <section className="mt-10">
+            <div className="mb-5">
+            <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">
+                  Desenvolvimento contínuo
+            </p>
+
+          <h2 className="mt-1 text-2xl font-bold text-white">
+                  Registro de estudos
+          </h2>
+
+            <p className="mt-1 text-sm text-slate-400">
+                  Registre sessões de estudo e prática para acompanhar sua evolução.
+            </p>
+            </div>
+
+          <StudySessionForm skills={skills} />
+          <div className="mt-6">
+  <div className="mb-3 flex items-center justify-between">
+    <h3 className="font-semibold text-white">
+      Histórico recente
+    </h3>
+
+    <span className="text-sm text-slate-400">
+      {studySessions.length} sessões
+    </span>
+  </div>
+  
+  <section className="mt-10">
+  <div className="mb-5">
+    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">
+      Analytics
+    </p>
+
+    <h2 className="mt-1 text-2xl font-bold text-white">
+      Tempo por competência
+    </h2>
+
+    <p className="mt-1 text-sm text-slate-400">
+      Distribuição do tempo registrado entre as competências estudadas.
+    </p>
+  </div>
+
+  <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+    <div className="space-y-5">
+      {studyBySkill.map((item) => {
+        const maiorValor = Math.max(
+          ...studyBySkill.map((skill) => skill.minutos)
+        );
+
+        const percentual =
+          maiorValor > 0
+            ? (item.minutos / maiorValor) * 100
+            : 0;
+
+        const horas = Math.floor(item.minutos / 60);
+        const minutos = item.minutos % 60;
+
+        return (
+          <div key={item.skill_id}>
+            <div className="mb-2 flex items-center justify-between gap-4">
+              <div>
+                <p className="font-semibold text-white">
+                  {item.skill}
+                </p>
+
+                <p className="text-xs text-slate-500">
+                  {item.sessoes}{" "}
+                  {item.sessoes === 1 ? "sessão" : "sessões"}
+                </p>
+              </div>
+
+              <span className="text-sm font-semibold text-slate-300">
+                {horas > 0 && `${horas}h`}
+                {minutos > 0 && `${minutos}min`}
+              </span>
+            </div>
+
+            <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-emerald-500"
+                style={{
+                  width: `${percentual}%`,
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
+
+  <div className="space-y-3">
+    {studySessions.map((session) => {
+      const skill = skills.find(
+        (item) => item.id === session.skill_id
+      );
+
+      const horas = Math.floor(session.minutos / 60);
+      const minutos = session.minutos % 60;
+
+      return (
+        <article
+          key={session.id}
+          className="rounded-xl border border-slate-800 bg-slate-900 p-4"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-500">
+                {skill?.nome ?? "Skill"}
+              </p>
+
+              <h4 className="mt-1 font-semibold text-white">
+                {session.assunto}
+              </h4>
+
+              {session.origem && (
+                <p className="mt-1 text-sm text-slate-400">
+                  {session.origem}
+                </p>
+              )}
+            </div>
+
+            <div className="text-right">
+              <p className="font-semibold text-white">
+                {horas > 0 && `${horas}h`}
+                {minutos > 0 && `${minutos}min`}
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
+                {session.hora_inicio} → {session.hora_fim}
+              </p>
+              <StudySessionEdit
+                sessionId={session.id}
+                horaFimAtual={session.hora_fim}
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-400">
+            <span>
+              {new Date(
+                `${session.data}T00:00:00`
+              ).toLocaleDateString("pt-BR")}
+            </span>
+
+            {session.observacao && (
+              <span>• {session.observacao}</span>
+            )}
+          </div>
+        </article>
+      );
+    })}
+  </div>
+</div>
+          </section>
 
         <section>
           <h2 className="mb-5 text-xl font-semibold">
@@ -218,7 +434,11 @@ export default async function Home() {
 
                 <div className="mt-4 flex justify-between text-sm text-slate-400">
                   <span>
-                    {skill.horas_estudo}h de estudo
+                    {Math.floor(skill.horas_estudo / 60)}h
+                    {skill.horas_estudo % 60 > 0
+                      ? `${skill.horas_estudo % 60}min`
+                      : ""}{" "}
+                      de estudo
                   </span>
 
                   <span>
