@@ -693,17 +693,12 @@ const [
                     </h3>
                   </div>
 
-                  <span className="text-2xl font-bold">
-                    {skill.nivel}%
-                  </span>
+                  
+                    
+                  
                 </div>
 
-                <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
-                  <div
-                    className="h-full rounded-full bg-emerald-400"
-                    style={{ width: `${skill.nivel}%` }}
-                  />
-                </div>
+                
 
                 <div className="mt-4 flex justify-between text-sm text-slate-400">
                   <span>

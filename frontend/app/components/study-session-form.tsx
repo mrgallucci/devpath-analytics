@@ -152,7 +152,7 @@ export default function StudySessionForm({
           onChange={(event) => setObservacao(event.target.value)}
           placeholder="Observações"
           rows={3}
-          className="rounded-lg border border-slate-700 bg-slate-950 p-3 text-white md:col-span-2"
+          className="resize-none rounded-lg border border-slate-700 bg-slate-950 p-3 text-white md:col-span-2"
         />
       </div>
 
