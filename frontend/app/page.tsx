@@ -67,6 +67,17 @@ type TechIncome = {
   valor: number;
   observacao: string | null;
 };
+type AnalyticsSummary = {
+  total_sessoes: number;
+  total_minutos: number;
+  media_minutos_sessao: number;
+  skills_estudadas: number;
+};
+
+type ProjectTechnology = {
+  tecnologia: string;
+  projetos: number;
+};
 
 async function getSkills(): Promise<Skill[]> {
   const response = await fetch(
@@ -173,9 +184,41 @@ async function getTechIncomes(): Promise<TechIncome[]> {
 
   return response.json();
 }
+async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
+  const response = await fetch(
+    "http://127.0.0.1:8000/api/analytics/summary",
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar o resumo analítico."
+    );
+  }
+
+  return response.json();
+}
+async function getProjectTechnologies(): Promise<ProjectTechnology[]> {
+  const response = await fetch(
+    "http://127.0.0.1:8000/api/analytics/project-technologies",
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar as tecnologias dos projetos."
+    );
+  }
+
+  return response.json();
+}
 
 export default async function Home() {
-  const [
+const [
   skills,
   summary,
   projects,
@@ -183,6 +226,8 @@ export default async function Home() {
   studySessions,
   studyBySkill,
   techIncomes,
+  analyticsSummary,
+  projectTechnologies,
 ] = await Promise.all([
   getSkills(),
   getDashboardSummary(),
@@ -191,6 +236,8 @@ export default async function Home() {
   getStudySessions(),
   getStudyBySkill(),
   getTechIncomes(),
+  getAnalyticsSummary(),
+  getProjectTechnologies(),
 ]);
 
   return (
@@ -415,7 +462,50 @@ export default async function Home() {
       Distribuição do tempo registrado entre as competências estudadas.
     </p>
   </div>
+    
+  <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+      <p className="text-sm text-slate-400">
+          Sessões
+      </p>
+      <p className="mt-2 text-2xl font-bold text-white">
+        {analyticsSummary.total_sessoes}
+      </p>
+  </div>
 
+  <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <p className="text-sm text-slate-400">
+      Tempo registrado
+    </p>
+    <p className="mt-2 text-2xl font-bold text-white">
+      {Math.floor(analyticsSummary.total_minutos / 60)}h
+      {analyticsSummary.total_minutos % 60 > 0
+        ? `${analyticsSummary.total_minutos % 60}min`
+        : ""}
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <p className="text-sm text-slate-400">
+      Média por sessão
+    </p>
+    <p className="mt-2 text-2xl font-bold text-white">
+      {Math.floor(analyticsSummary.media_minutos_sessao / 60)}h
+      {analyticsSummary.media_minutos_sessao % 60 > 0
+        ? `${analyticsSummary.media_minutos_sessao % 60}min`
+        : ""}
+    </p>
+  </div>
+
+  <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+    <p className="text-sm text-slate-400">
+      Skills estudadas
+    </p>
+    <p className="mt-2 text-2xl font-bold text-emerald-400">
+      {analyticsSummary.skills_estudadas}
+    </p>
+  </div>
+</div>
   <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
     <div className="space-y-5">
       {studyBySkill.map((item) => {
@@ -464,6 +554,56 @@ export default async function Home() {
       })}
     </div>
   </div>
+  <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+  <div className="mb-5">
+    <h3 className="font-semibold text-white">
+      Tecnologias no portfólio
+    </h3>
+
+    <p className="mt-1 text-sm text-slate-400">
+      Frequência das tecnologias detectadas nos projetos importados.
+    </p>
+  </div>
+
+  <div className="grid gap-4">
+    {projectTechnologies.map((item) => {
+      const maiorValor = Math.max(
+        ...projectTechnologies.map(
+          (tecnologia) => tecnologia.projetos
+        )
+      );
+
+      const percentual =
+        maiorValor > 0
+          ? (item.projetos / maiorValor) * 100
+          : 0;
+
+      return (
+        <div key={item.tecnologia}>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <span className="text-sm font-medium text-slate-200">
+              {item.tecnologia}
+            </span>
+
+            <span className="text-sm text-slate-400">
+              {item.projetos}{" "}
+              {item.projetos === 1 ? "projeto" : "projetos"}
+            </span>
+          </div>
+
+          <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div
+              className="h-full rounded-full bg-emerald-500"
+              style={{
+                width: `${percentual}%`,
+              }}
+            />
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
 </section>
 
   <div className="space-y-3">

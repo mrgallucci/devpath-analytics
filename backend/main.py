@@ -780,3 +780,69 @@ def estudo_por_skill(
     )
 
     return resultado    
+@app.get("/api/analytics/summary")
+def analytics_summary(
+    db: Session = Depends(get_db),
+):
+    sessoes = db.query(models.StudySession).all()
+
+    total_sessoes = len(sessoes)
+
+    total_minutos = sum(
+        sessao.minutos for sessao in sessoes
+    )
+
+    media_minutos = (
+        round(total_minutos / total_sessoes)
+        if total_sessoes > 0
+        else 0
+    )
+
+    skills_estudadas = len({
+        sessao.skill_id
+        for sessao in sessoes
+    })
+
+    return {
+        "total_sessoes": total_sessoes,
+        "total_minutos": total_minutos,
+        "media_minutos_sessao": media_minutos,
+        "skills_estudadas": skills_estudadas,
+    }
+@app.get("/api/analytics/project-technologies")
+def tecnologias_dos_projetos(
+    db: Session = Depends(get_db),
+):
+    projetos = db.query(models.Project).all()
+
+    contagem = {}
+
+    for projeto in projetos:
+        if not projeto.tecnologias:
+            continue
+
+        tecnologias = [
+            tecnologia.strip()
+            for tecnologia in projeto.tecnologias.split(",")
+            if tecnologia.strip()
+        ]
+
+        for tecnologia in tecnologias:
+            contagem[tecnologia] = (
+                contagem.get(tecnologia, 0) + 1
+            )
+
+    resultado = [
+        {
+            "tecnologia": tecnologia,
+            "projetos": quantidade,
+        }
+        for tecnologia, quantidade in contagem.items()
+    ]
+
+    resultado.sort(
+        key=lambda item: item["projetos"],
+        reverse=True,
+    )
+
+    return resultado
