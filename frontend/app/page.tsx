@@ -1,6 +1,7 @@
 import ProjectImportForm from "./components/project-import-form";
 import StudySessionForm from "@/app/components/study-session-form";
 import StudySessionEdit from "@/app/components/study-session-edit";
+import TechIncomeForm from "./components/tech-income-form";
 
 type Skill = {
   id: number;
@@ -57,6 +58,14 @@ type StudyBySkill = {
   minutos: number;
   horas: number;
   sessoes: number;
+};
+type TechIncome = {
+  id: number;
+  data: string;
+  descricao: string;
+  categoria: string;
+  valor: number;
+  observacao: string | null;
 };
 
 async function getSkills(): Promise<Skill[]> {
@@ -148,6 +157,23 @@ async function getStudyBySkill(): Promise<StudyBySkill[]> {
 
   return response.json();
 }
+async function getTechIncomes(): Promise<TechIncome[]> {
+  const response = await fetch(
+    "http://127.0.0.1:8000/api/tech-incomes",
+    {
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      "Não foi possível carregar a renda tech."
+    );
+  }
+
+  return response.json();
+}
+
 export default async function Home() {
   const [
   skills,
@@ -156,6 +182,7 @@ export default async function Home() {
   certificates,
   studySessions,
   studyBySkill,
+  techIncomes,
 ] = await Promise.all([
   getSkills(),
   getDashboardSummary(),
@@ -163,6 +190,7 @@ export default async function Home() {
   getCertificates(),
   getStudySessions(),
   getStudyBySkill(),
+  getTechIncomes(),
 ]);
 
   return (
@@ -241,6 +269,111 @@ export default async function Home() {
             </p>
           </article>
         </section>
+          <section className="mt-10">
+  <div className="mb-5">
+    <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">
+      Carreira
+    </p>
+
+    <h2 className="text-2xl font-bold text-white">
+      Renda Tech
+    </h2>
+
+    <p className="mt-1 text-slate-400">
+      Acompanhe a evolução da renda gerada com tecnologia.
+    </p>
+  </div>
+
+  <TechIncomeForm />
+  <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+  <div className="mb-4 flex items-end justify-between gap-4">
+    <div>
+      <p className="text-sm text-slate-400">
+        Progresso da meta
+      </p>
+
+      <p className="mt-1 text-2xl font-bold text-white">
+        R$ {summary.renda_tech.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+        })}
+        <span className="text-sm font-normal text-slate-500">
+          {" "}de R$ {summary.meta_renda.toLocaleString("pt-BR")}
+        </span>
+      </p>
+    </div>
+
+    <span className="font-semibold text-emerald-400">
+      {Math.min(
+        100,
+        Math.round(
+          (summary.renda_tech / summary.meta_renda) * 100
+        )
+      )}%
+    </span>
+  </div>
+
+  <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+    <div
+      className="h-full rounded-full bg-emerald-500 transition-all"
+      style={{
+        width: `${Math.min(
+          100,
+          (summary.renda_tech / summary.meta_renda) * 100
+        )}%`,
+      }}
+    />
+  </div>
+
+  <div className="mt-6">
+    <h3 className="font-semibold text-white">
+      Histórico de renda
+    </h3>
+
+    {techIncomes.length === 0 ? (
+      <p className="mt-3 text-sm text-slate-500">
+        Nenhuma renda com tecnologia registrada ainda.
+      </p>
+    ) : (
+      <div className="mt-3 grid gap-3">
+        {techIncomes.map((income) => (
+          <div
+            key={income.id}
+            className="flex flex-col justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950 p-4 sm:flex-row sm:items-center"
+          >
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-medium text-white">
+                  {income.descricao}
+                </p>
+
+                <span className="rounded-full bg-slate-800 px-2 py-1 text-xs text-slate-300">
+                  {income.categoria}
+                </span>
+              </div>
+
+              <p className="mt-1 text-sm text-slate-500">
+                {income.data.split("-").reverse().join("/")}
+              </p>
+
+              {income.observacao && (
+                <p className="mt-2 text-sm text-slate-400">
+                  {income.observacao}
+                </p>
+              )}
+            </div>
+
+            <p className="whitespace-nowrap font-semibold text-emerald-400">
+              R$ {income.valor.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+              })}
+            </p>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+</div>
+</section>        
           <section className="mt-10">
             <div className="mb-5">
             <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">

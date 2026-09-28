@@ -56,3 +56,13 @@ class StudySession(Base):
     assunto = Column(String, nullable=False)
     origem = Column(String, nullable=True)
     observacao = Column(String, nullable=True)
+
+class TechIncome(Base):
+        __tablename__ = "tech_incomes"
+
+        id = Column(Integer, primary_key=True, index=True)
+        data = Column(String, nullable=False)
+        descricao = Column(String, nullable=False)
+        categoria = Column(String, nullable=False)
+        valor = Column(Float, nullable=False)
+        observacao = Column(String, nullable=True)

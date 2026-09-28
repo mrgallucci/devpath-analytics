@@ -70,6 +70,14 @@ class StudySessionCreate(BaseModel):
     assunto: str
     origem: str | None = None
     observacao: str | None = None
+
+class TechIncomeCreate(BaseModel):
+    data: str
+    descricao: str
+    categoria: str
+    valor: float
+    observacao: str | None = None
+
 @app.get("/")
 def root():
     return {
@@ -149,8 +157,16 @@ def dashboard_summary(
         sessao.minutos for sessao in sessoes
     )
 
+    rendas = db.query(models.TechIncome).all()
+    
+    total_renda_tech = sum(
+        renda.valor for renda in rendas
+    )
+
     horas = total_minutos // 60
     minutos = total_minutos % 60
+
+    
 
     return {
         "skills": total_skills,
@@ -158,7 +174,7 @@ def dashboard_summary(
         "horas_estudo_formatado": f"{horas}h{minutos:02d}",
         "projetos": db.query(models.Project).count(),
         "certificados": db.query(models.Certificate).count(),
-        "renda_tech": 0,
+        "renda_tech": total_renda_tech,
         "meta_renda": 3000
     }
 def atualizar_skills_do_projeto(db: Session, tecnologias: list[str]):
@@ -667,6 +683,65 @@ def atualizar_sessao_estudo(
     db.refresh(sessao)
 
     return sessao
+
+@app.get("/api/tech-incomes")
+def listar_rendas_tech(
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(models.TechIncome)
+        .order_by(models.TechIncome.id.desc())
+        .all()
+    )
+@app.delete("/api/tech-incomes/{income_id}")
+def excluir_renda_tech(
+    income_id: int,
+    db: Session = Depends(get_db),
+):
+    renda = (
+        db.query(models.TechIncome)
+        .filter(models.TechIncome.id == income_id)
+        .first()
+    )
+
+    if not renda:
+        raise HTTPException(
+            status_code=404,
+            detail="Registro de renda não encontrado.",
+        )
+
+    db.delete(renda)
+    db.commit()
+
+    return {
+        "message": "Registro de renda excluído com sucesso."
+    }
+
+
+@app.post("/api/tech-incomes")
+def criar_renda_tech(
+    income: TechIncomeCreate,
+    db: Session = Depends(get_db),
+):
+    if income.valor <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="O valor da renda deve ser maior que zero.",
+        )
+
+    nova_renda = models.TechIncome(
+        data=income.data,
+        descricao=income.descricao,
+        categoria=income.categoria,
+        valor=income.valor,
+        observacao=income.observacao,
+    )
+
+    db.add(nova_renda)
+    db.commit()
+    db.refresh(nova_renda)
+
+    return nova_renda
 
       
 @app.get("/api/analytics/study-by-skill")
