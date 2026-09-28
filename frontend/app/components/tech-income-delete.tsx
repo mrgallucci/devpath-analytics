@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 type Props = {
   incomeId: number;
   descricao: string;
@@ -31,7 +32,7 @@ export default function TechIncomeDelete({
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/tech-incomes/${incomeId}`,
+        `${API_URL}/api/tech-incomes/${incomeId}`,
         {
           method: "DELETE",
         }

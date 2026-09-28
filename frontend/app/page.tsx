@@ -6,7 +6,7 @@ import CertificateForm from "./components/certificate-form";
 import CertificateEvidence from "./components/certificate-evidence";
 import TechIncomeDelete from "./components/tech-income-delete";
 import CertificateDelete from "./components/certificate-delete";
-
+import { API_URL } from "./lib/api";
 type Skill = {
   id: number;
   nome: string;
@@ -85,7 +85,7 @@ type ProjectTechnology = {
 
 async function getSkills(): Promise<Skill[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/skills",
+    `${API_URL}/api/skills`,
     {
       cache: "no-store",
     }
@@ -100,7 +100,7 @@ async function getSkills(): Promise<Skill[]> {
 
 async function getDashboardSummary(): Promise<DashboardSummary> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/dashboard/summary",
+    `${API_URL}/api/dashboard/summary`,
     {
       cache: "no-store",
     }
@@ -115,7 +115,7 @@ async function getDashboardSummary(): Promise<DashboardSummary> {
 
 async function getProjects(): Promise<Project[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/projects",
+    `${API_URL}/api/projects`,
     {
       cache: "no-store",
     }
@@ -129,7 +129,7 @@ async function getProjects(): Promise<Project[]> {
 }
 async function getCertificates(): Promise<Certificate[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/certificates",
+    `${API_URL}/api/certificates`,
     {
       cache: "no-store",
     }
@@ -146,7 +146,7 @@ async function getCertificates(): Promise<Certificate[]> {
 
 async function getStudySessions(): Promise<StudySession[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/study-sessions",
+    `${API_URL}/api/study-sessions`,
     { cache: "no-store" }
   );
 
@@ -160,7 +160,7 @@ async function getStudySessions(): Promise<StudySession[]> {
 }
 async function getStudyBySkill(): Promise<StudyBySkill[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/analytics/study-by-skill",
+    `${API_URL}/api/analytics/study-by-skill`,
     { cache: "no-store" }
   );
 
@@ -174,7 +174,7 @@ async function getStudyBySkill(): Promise<StudyBySkill[]> {
 }
 async function getTechIncomes(): Promise<TechIncome[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/tech-incomes",
+    `${API_URL}/api/tech-incomes`,
     {
       cache: "no-store",
     }
@@ -190,7 +190,7 @@ async function getTechIncomes(): Promise<TechIncome[]> {
 }
 async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/analytics/summary",
+    `${API_URL}/api/analytics/summary`,
     {
       cache: "no-store",
     }
@@ -206,7 +206,7 @@ async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
 }
 async function getProjectTechnologies(): Promise<ProjectTechnology[]> {
   const response = await fetch(
-    "http://127.0.0.1:8000/api/analytics/project-technologies",
+    `${API_URL}/api/analytics/project-technologies`,
     {
       cache: "no-store",
     }
@@ -222,6 +222,7 @@ async function getProjectTechnologies(): Promise<ProjectTechnology[]> {
 }
 
 export default async function Home() {
+const editMode = process.env.NEXT_PUBLIC_EDIT_MODE !== "false";
 const [
   skills,
   summary,
@@ -268,6 +269,37 @@ const [
             </span>
           </p>
         </header>
+
+        <section className="mb-10 rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center">
+            <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-700 bg-slate-950 text-center text-xs text-slate-500">
+              Espaço para<br />foto de perfil
+            </div>
+
+            <div className="max-w-3xl">
+              <p className="text-sm font-semibold uppercase tracking-wider text-emerald-400">
+                Perfil profissional
+              </p>
+              <h2 className="mt-1 text-2xl font-bold text-white">
+                Maxwell Gallucci Rodrigues
+              </h2>
+              <p className="mt-2 text-slate-300">
+                Sommelier e profissional de varejo em transição para tecnologia, conectando experiência em vendas e comportamento do consumidor com desenvolvimento, dados, automação, inteligência artificial e marketing digital.
+              </p>
+              <p className="mt-3 text-sm text-slate-500">
+                Desenvolvimento Full Stack · Data Analytics · Applied AI · Marketing Digital
+              </p>
+              <a
+                href="https://github.com/mrgallucci"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300"
+              >
+                GitHub: mrgallucci →
+              </a>
+            </div>
+          </div>
+        </section>
 
         <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <article className="rounded-xl border border-slate-800 bg-slate-900 p-5">
@@ -335,7 +367,7 @@ const [
     </p>
   </div>
 
-  <TechIncomeForm />
+  {editMode && <TechIncomeForm />}
   <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-900 p-5">
   <div className="mb-4 flex items-end justify-between gap-4">
     <div>
@@ -420,10 +452,12 @@ const [
     })}
   </p>
 
-  <TechIncomeDelete
-    incomeId={income.id}
-    descricao={income.descricao}
-  />
+  {editMode && (
+    <TechIncomeDelete
+      incomeId={income.id}
+      descricao={income.descricao}
+    />
+  )}
 </div>
           </div>
         ))}
@@ -447,7 +481,7 @@ const [
             </p>
             </div>
 
-          <StudySessionForm skills={skills} />
+          {editMode && <StudySessionForm skills={skills} />}
           <div className="mt-6">
   <div className="mb-3 flex items-center justify-between">
     <h3 className="font-semibold text-white">
@@ -657,10 +691,12 @@ const [
               <p className="mt-1 text-xs text-slate-500">
                 {session.hora_inicio} → {session.hora_fim}
               </p>
-              <StudySessionEdit
-                sessionId={session.id}
-                horaFimAtual={session.hora_fim}
-              />
+              {editMode && (
+                <StudySessionEdit
+                  sessionId={session.id}
+                  horaFimAtual={session.hora_fim}
+                />
+              )}
             </div>
           </div>
 
@@ -746,7 +782,7 @@ const [
             </span>
           </div>
           
-          <ProjectImportForm />
+          {editMode && <ProjectImportForm />}
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
@@ -795,7 +831,7 @@ const [
       <p className="text-sm font-semibold uppercase tracking-wider text-emerald-500">
         Formação contínua
       </p>
-            <CertificateForm />
+            {editMode && <CertificateForm />}
       <h2 className="mt-1 text-2xl font-bold text-white">
         Certificados
       </h2>
@@ -843,16 +879,30 @@ const [
   </p>
 )}
 
-<CertificateEvidence
-  certificateId={certificate.id}
-  arquivoAtual={certificate.arquivo}
-  urlAtual={certificate.url}
-/>
-
-<CertificateDelete
-  certificateId={certificate.id}
-  titulo={certificate.titulo}
-/>
+{editMode ? (
+  <>
+    <CertificateEvidence
+      certificateId={certificate.id}
+      arquivoAtual={certificate.arquivo}
+      urlAtual={certificate.url}
+    />
+    <CertificateDelete
+      certificateId={certificate.id}
+      titulo={certificate.titulo}
+    />
+  </>
+) : (
+  (certificate.arquivo || certificate.url) && (
+    <a
+      href={certificate.arquivo ? `${API_URL}${certificate.arquivo}` : certificate.url!}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-4 inline-block text-sm font-medium text-emerald-400 hover:text-emerald-300"
+    >
+      Ver certificado ↗
+    </a>
+  )
+)}
 
        
       </article>

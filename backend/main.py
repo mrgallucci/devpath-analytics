@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from pathlib import Path
 from uuid import uuid4
 import httpx
@@ -30,7 +31,9 @@ class CertificateCreate(BaseModel):
     url: str | None = None
     arquivo: str | None = None
 
-UPLOAD_DIR = Path("uploads/certificates")
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_ROOT = BASE_DIR / "uploads"
+UPLOAD_DIR = UPLOAD_ROOT / "certificates"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 class ProjectImport(BaseModel):
@@ -44,16 +47,36 @@ app = FastAPI(
 )
 app.mount(
     "/uploads",
-    StaticFiles(directory="uploads"),
+    StaticFiles(directory=str(UPLOAD_ROOT)),
     name="uploads",
 )
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def production_read_only(request, call_next):
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    if environment == "production" and request.method not in {"GET", "HEAD", "OPTIONS"}:
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=403,
+            content={"detail": "Modo público: alterações estão desativadas."},
+        )
+    return await call_next(request)
 class SkillCreate(BaseModel):
     nome: str
     categoria: str

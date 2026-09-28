@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 type Skill = {
   id: number;
   nome: string;
@@ -36,7 +37,7 @@ export default function StudySessionForm({
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/study-sessions",
+        `${API_URL}/api/study-sessions`,
         {
           method: "POST",
           headers: {

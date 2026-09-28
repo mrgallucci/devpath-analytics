@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 type StudySessionEditProps = {
   sessionId: number;
   horaFimAtual: string | null;
@@ -30,7 +31,7 @@ export default function StudySessionEdit({
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/study-sessions/${sessionId}`,
+        `${API_URL}/api/study-sessions/${sessionId}`,
         {
           method: "PATCH",
           headers: {

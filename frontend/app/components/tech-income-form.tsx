@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 type TechIncomeFormProps = {
   categorias?: string[];
 };
@@ -44,7 +45,7 @@ export default function TechIncomeForm({
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/tech-incomes",
+        `${API_URL}/api/tech-incomes`,
         {
           method: "POST",
           headers: {

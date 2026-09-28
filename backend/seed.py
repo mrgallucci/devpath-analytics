@@ -23,6 +23,7 @@ skills_iniciais = [
     ("Análise de Dados", "Data & Analytics"),
     ("Inteligência Artificial Aplicada", "IA"),
     ("Prompt Engineering", "IA"),
+    ("Marketing Digital", "Marketing & Growth"),
 ]
 
 

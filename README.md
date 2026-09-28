@@ -16,6 +16,12 @@ Mais do que registrar cursos concluídos, o DevPath busca responder perguntas co
 
 ---
 
+## Perfil profissional
+
+O dashboard também inclui uma apresentação profissional preparada para evoluir para um currículo online, conectando experiência em varejo e vendas com desenvolvimento, dados, IA e marketing digital, além de um espaço reservado para foto de perfil.
+
+---
+
 ## Dashboard
 
 O dashboard consolida indicadores da evolução profissional:
@@ -58,6 +64,7 @@ Entre as tecnologias atualmente monitoradas estão:
 - Análise de Dados
 - Inteligência Artificial Aplicada
 - Prompt Engineering
+- Marketing Digital
 
 Os cards utilizam métricas objetivas, como tempo de estudo registrado e participação em projetos.
 
@@ -220,7 +227,13 @@ O backend concentra regras de negócio, cálculos analíticos, persistência e i
 
 ## Principais endpoints
 
-### Dashboard
+### Perfil profissional
+
+O dashboard também inclui uma apresentação profissional preparada para evoluir para um currículo online, conectando experiência em varejo e vendas com desenvolvimento, dados, IA e marketing digital, além de um espaço reservado para foto de perfil.
+
+---
+
+## Dashboard
 
 ```http
 GET /api/dashboard/summary
@@ -462,3 +475,8 @@ O DevPath Analytics faz parte dos projetos desenvolvidos sob a identidade SARG T
 Desenvolvimento Full Stack · Data Analytics · Applied AI
 
 GitHub: `mrgallucci`
+---
+
+## Configuração para produção
+
+O frontend usa `NEXT_PUBLIC_API_URL` para localizar a API e `NEXT_PUBLIC_EDIT_MODE=false` para ocultar os controles administrativos no portfólio público. O backend aceita `DATABASE_URL`, `CORS_ORIGINS` e `ENVIRONMENT=production`; nesse modo, operações de escrita da API pública ficam desativadas.

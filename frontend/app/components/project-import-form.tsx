@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 export default function ProjectImportForm() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,7 @@ export default function ProjectImportForm() {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/projects/import",
+        `${API_URL}/api/projects/import`,
         {
           method: "POST",
           headers: {

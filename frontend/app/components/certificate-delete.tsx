@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 type Props = {
   certificateId: number;
   titulo: string;
@@ -31,7 +32,7 @@ export default function CertificateDelete({
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/certificates/${certificateId}`,
+        `${API_URL}/api/certificates/${certificateId}`,
         {
           method: "DELETE",
         }

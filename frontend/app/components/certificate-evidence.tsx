@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 type Props = {
   certificateId: number;
   arquivoAtual: string | null;
@@ -33,7 +34,7 @@ export default function CertificateEvidence({
       formData.append("file", arquivo);
 
       const uploadResponse = await fetch(
-        "http://127.0.0.1:8000/api/certificates/upload",
+        `${API_URL}/api/certificates/upload`,
         {
           method: "POST",
           body: formData,
@@ -47,7 +48,7 @@ export default function CertificateEvidence({
       const uploadData = await uploadResponse.json();
 
       const response = await fetch(
-        `http://127.0.0.1:8000/api/certificates/${certificateId}/arquivo`,
+        `${API_URL}/api/certificates/${certificateId}/arquivo`,
         {
           method: "PATCH",
           headers: {
@@ -83,7 +84,7 @@ export default function CertificateEvidence({
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/certificates/${certificateId}/url`,
+        `${API_URL}/api/certificates/${certificateId}/url`,
         {
           method: "PATCH",
           headers: {
@@ -113,7 +114,7 @@ export default function CertificateEvidence({
 
   if (arquivoAtual || urlAtual) {
     const destino = arquivoAtual
-      ? `http://127.0.0.1:8000${arquivoAtual}`
+      ? `${API_URL}${arquivoAtual}`
       : urlAtual!;
 
     return (

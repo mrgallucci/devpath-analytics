@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { API_URL } from "../lib/api";
 export default function CertificateForm() {
   const router = useRouter();
 
@@ -39,7 +40,7 @@ export default function CertificateForm() {
         formData.append("file", arquivo);
 
         const uploadResponse = await fetch(
-          "http://127.0.0.1:8000/api/certificates/upload",
+          `${API_URL}/api/certificates/upload`,
           {
             method: "POST",
             body: formData,
@@ -61,7 +62,7 @@ export default function CertificateForm() {
       }
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/certificates",
+        `${API_URL}/api/certificates`,
         {
           method: "POST",
           headers: {
